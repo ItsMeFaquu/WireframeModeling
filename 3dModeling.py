@@ -420,9 +420,9 @@ while running:
     for objects in Objects_list:
         objects.update(Player1)
 
-    #Debug
-    draw_text_on_screen(Player1.rotation,(0,450))
-    draw_text_on_screen(Player1.position)
+    # #Debug
+    # draw_text_on_screen(Player1.rotation,(0,450))
+    # draw_text_on_screen(Player1.position)
 
     time += 1
     pygame.display.update()
