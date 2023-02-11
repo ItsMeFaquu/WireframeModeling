@@ -79,7 +79,7 @@ def ThreeD_rotation(coordinate,pitch=0,yaw=0,roll=0):
     return [x,y,z]
 
 ## Shapes functions (return vertices and edges lists)
-## square matrix:Square(Length)[0] 
+## square vertices:Square(Length)[0] 
 ## square edges :Square(Length)[1] 
 ## square faces :Square(Length)[2] 
 def Square(length):
@@ -97,7 +97,7 @@ def Square(length):
     ],[
         [0,2,3,1],[6,4,5,7],[3,1,5,7],[3,2,6,7],[1,0,4,5],[2,0,4,6]
     ]]
-## pyramid matrix:Pyramid(Length)[0] 
+## pyramid vertices:Pyramid(Length)[0] 
 ## pyramid edges :Pyramid(Length)[1] 
 ## pyramid faces :Pyramid(Length)[2] 
 def Pyramid(length):
@@ -113,33 +113,15 @@ def Pyramid(length):
         [4,0,1],[4,0,2],[4,2,3],[4,1,3], [1,0,2,3]
     ]]
 
-def Sphere(Radius):
-    vertices = []
-    for sita in range(0,181,4):
-        for theta in range(0,91,4):
-            sita = sita/180 * math.pi
-            theta = theta/180 * math.pi
-            
-            z = Radius * math.cos(theta)
-            if theta == 0:
-                r = Radius
-            else:
-                r = z / math.tan(theta)
-            x = r * math.cos(sita)
-            y = math.sqrt(r*r - x*x )
-            vertices.append([x, y, 0])
-            vertices.append([x, -y, 0])
-    return [vertices,["None"],["None"]]
 
 
-Sphere(10)
 ## Animations
 def Animation(Object,vertices,animations):
     value = vertices
     for animation in animations:
         # Checks for animations
         if animation[0:9] == "Transform": 
-            value = Transform(vertices,[Object.position],int(animation[9:len(animation)]))
+            value = Transform(vertices,[Object.position],int(animation[10:len(animation)]),animation[9])
             vertices = value
 
         if animation[0:6] == "Rotate":
@@ -168,25 +150,29 @@ def Rotate(position,center,speed):
     angular_speed =  time * speed/180 * math.pi
     [[x,y,z]] = matrix_0Add_1Subtract(position,center,1)
     
-    # Rotate about Y-axis
-    [[z, x]] = matrix_multiply([[z,x]], rotation_matrix(angular_speed))
+    
     # Rotate about X-axis
     [[y, z]] = matrix_multiply([[y,z]], rotation_matrix(angular_speed))
+    # Rotate about Y-axis
+    [[z, x]] = matrix_multiply([[z,x]], rotation_matrix(angular_speed))
     # Rotate about Z-axis
     [[x, y]] = matrix_multiply([[x,y]], rotation_matrix(angular_speed))
 
     [[x,y,z]] = matrix_0Add_1Subtract([[x,y,z]],center,0)
     return [[x,y,z]]
 
-def Transform(position,center,angle):
+def Transform(position,center,angle,axis):
     sita = angle/180 * math.pi
     [[x,y,z]] = matrix_0Add_1Subtract(position,center,1)
-    # Rotate about Y-axis
-    [[z, x]] = matrix_multiply([[z,x]], rotation_matrix(sita))
-    # Rotate about X-axis
-    [[y, z]] = matrix_multiply([[y,z]], rotation_matrix(sita))
-    # Rotate about Z-axis
-    [[x, y]] = matrix_multiply([[x,y]], rotation_matrix(sita))
+    if axis=="Y":
+        # Rotate about Y-axis
+        [[z, x]] = matrix_multiply([[z,x]], rotation_matrix(sita))
+    if axis=="X":
+        # Rotate about X-axis
+        [[y, z]] = matrix_multiply([[y,z]], rotation_matrix(sita))
+    if axis=="Z":
+        # Rotate about Z-axis
+        [[x, y]] = matrix_multiply([[x,y]], rotation_matrix(sita))
     [[x,y,z]] = matrix_0Add_1Subtract([[x,y,z]],center,0)
     return [[x,y,z]]
 
@@ -331,12 +317,12 @@ class Object():
 # Create Elements
 Environment = Object((0,0,0), Square(WIDTH))
 Player1 = Player(90, (1920,1080), 1000, )
-Square1 = Object((5000,5000,1010), Square(100),[])
-Pyramid1 = Object((5000,5100,1010), Pyramid(100),[])
-Pyramid2 = Object((5000,5000,1010), Pyramid(100),["Transform90",])
+Square1 = Object((5000,5000,1010), Square(100),["Rotate(5050,5050,1060)"])
+Pyramid1 = Object((5000,5100,1010), Pyramid(100),["Rotate(5050,5050,1060)"])
+Pyramid2 = Object((5000,5000,1010), Pyramid(100),["TransformX30","TransformY30","Rotate(5050,5050,1060)"])
+Pyramid3 = Object((5000,5000,1110), Pyramid(100),["TransformX180","Rotate(5050,5050,1060)"])
 Square2 = Object((0,0,0), Square(100))
 test_square = Object((0,0,0), Square(0))
-Sphere1 = Object((5000,5000,1010), Sphere(50),[])
 
 Objects_list = [
     # Environment,
@@ -344,7 +330,7 @@ Objects_list = [
     # Square2,
     Pyramid1,
     Pyramid2,
-    # Sphere1,
+    Pyramid3,
     # test_square
 ]
 
@@ -421,8 +407,6 @@ while running:
         objects.update(Player1)
 
     # #Debug
-    # draw_text_on_screen(Player1.rotation,(0,450))
-    # draw_text_on_screen(Player1.position)
 
     time += 1
     pygame.display.update()
